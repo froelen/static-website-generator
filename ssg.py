@@ -11,20 +11,14 @@ import json         # fpor reading translation files
 import os           # for file management
 
 
-# ARGS
-args = sys.argv[1:] # get the command line arguments (excluding the script name)
-options = "h"       # short options (e.g. "h" for -h)
-long_options = ["help", "languages=", "translations-dir=", "templates=", "templates-dir=", "root-dir="]
-
-
 # FUNCTIONS
-def uniformizePath(path:str, trailingSlash:bool=False) -> str:
+def uniformize_path(path:str, trailing_slash:bool=False) -> str:
     """
     Uniformizes a path by replacing backslashes with forward slashes, removing redundant slashes, and adding a trailing slash if necessary.
 
     Args:
         path: The path to uniformize.
-        trailingSlash: Whether to add a trailing slash to the path (True for directories, False for files).
+        trailing_slash: Whether to add a trailing slash to the path (True for directories, False for files).
     
     Returns:
         path: The uniformized path.
@@ -37,26 +31,26 @@ def uniformizePath(path:str, trailingSlash:bool=False) -> str:
         path = path.replace('//', '/') 
 
     # Add for directories, but not for files
-    if trailingSlash and not path.endswith('/'):
+    if trailing_slash and not path.endswith('/'):
         path += '/'
 
     return path
 
-def getTranslations(translationsDirectory:str='./', lang:str='') -> dict[str, dict[str, str]]:
+def get_translations(translations_dir:str='./', lang:str='') -> dict[str, dict[str, str]]:
     """
     Returns a dictionnary of the translations of the given language.
 
     Args:
-        translationsDirectory: The directory where the translation files are stored.
+        translations_dir: The directory where the translation files are stored.
         lang: The language to get the translations for.
 
     Returns:
         translations: A dictionnary of the translations for the given language (keys: template names as strings ; values: dictionnaries of the translations for each template).
     """
-    translationsDirectory = uniformizePath(translationsDirectory, True)
+    translations_dir = uniformize_path(translations_dir, True)
 
     try:
-        with open(f"{translationsDirectory}{lang}.json", 'r') as file:
+        with open(f"{translations_dir}{lang}.json", 'r') as file:
                 translations = json.load(file)
 
     except FileNotFoundError:
@@ -65,88 +59,94 @@ def getTranslations(translationsDirectory:str='./', lang:str='') -> dict[str, di
 
     return translations
 
-def getTemplateTranslations(translations:dict[str, dict[str, str]], templateName:str='') -> dict[str, str]:
+def get_template_translations(translations:dict[str, dict[str, str]], template_name:str='') -> dict[str, str]:
     """
     Returns a dictionnary of the translations for the given template.
 
     Args:
         translations: The dictionnary of all the translations for a language (keys: template names as strings ; values: dictionnaries of the translations).
-        templateName: The name of the template to get the translations for (file extension is optional).
+        template_name: The name of the template to get the translations for (file extension is optional).
         
     Returns:
-        translations[templateName]:A dictionnary of the translations for the given template (keys: the variables ; values: the translations).
+        translations[template_name]:A dictionnary of the translations for the given template (keys: the variables ; values: the translations).
     """
     
-    if templateName.endswith('.html'):
-        templateName = templateName[:-5]
+    if template_name.endswith('.html'):
+        template_name = template_name[:-5]
 
-    if templateName not in translations:
+    if template_name not in translations:
         return {}
     
-    return translations[templateName]
+    return translations[template_name]
 
-def replaceTemplateVariables(fullTemplatePath:str, templateTranslations:dict[str, str]={}, missingTranslationInfo:bool=False) -> str:
+def replace_variables(full_path:str, template_translations:dict[str, str]={}, missing_translation_warn:bool=False) -> str:
     """
     Returns an HTML string with the template's variables replaced by the corresponding translations.
 
     Args:
-        fullTemplatePath: Full path (absolute or relative) to the template file (e.g. 'C:/Users/User/Desktop/index.html' or './templates/index.html'). MUST INCLUDE THE FILE EXTENSION.
-        templateTranslations: Dictionnary of the translations (keys: variables as strings ; values: strings of the translations)
-        missingTranslationInfo: Whether to include information about missing translations in the output or not.
+        full_path: Full path (absolute or relative) to the template file (e.g. 'C:/Users/User/Desktop/index.html' or './templates/index.html'). MUST INCLUDE THE FILE EXTENSION.
+        template_translations: Dictionnary of the translations (keys: variables as strings ; values: strings of the translations)
+        missing_translation_warn: Whether to include information about missing translations in the output or not.
 
     Returns:
-        templateContent: The content of the template with the variables replaced by the corresponding translations.
+        template_content: The content of the template with the variables replaced by the corresponding translations.
     """
-    fullTemplatePath = uniformizePath(fullTemplatePath)
+    full_path = uniformize_path(full_path)
 
-    with open(fullTemplatePath, 'r') as template:
-        templateContent = template.read()
+    with open(full_path, 'r') as template:
+        template_content = template.read()
 
         # {{...}} is the variable marker
-        while '{{' in templateContent and '}}' in templateContent:
-            startIndex = templateContent.index('{{')
-            endIndex = templateContent.index('}}', startIndex) + 2
-            variable = templateContent[startIndex:endIndex]
-            variableName = variable[2:-2].strip()
+        while '{{' in template_content and '}}' in template_content:
+            start_index = template_content.index('{{')
+            end_index = template_content.index('}}', start_index) + 2
+            variable = template_content[start_index:end_index]
+            variable_name = variable[2:-2].strip()
 
-            if variableName in templateTranslations:
-                translation = templateTranslations[variableName]
-                templateContent = templateContent.replace(variable, translation)
+            if variable_name in template_translations:
+                translation = template_translations[variable_name]
+                template_content = template_content.replace(variable, translation)
             else:
-                if missingTranslationInfo:
-                    templateContent = templateContent.replace(variable, f"MISSING TRANSLATION: {variableName}")
+                if missing_translation_warn:
+                    template_content = template_content.replace(variable, f"MISSING TRANSLATION: {variable_name}")
                 else:
-                    templateContent = templateContent.replace(variable, '')
+                    template_content = template_content.replace(variable, '')
 
-    return templateContent
+    return template_content
 
-def updateFiles(languages:list[str], translationsDir:str, templates:list[str], templatesDir:str, rootDir:str) -> None:
+def update_files(languages:list[str], translations_dir:str, templates:list[str], templates_dir:str, output_dir:str) -> None:
     """
     Updates the files generated by replacing the variables in the templates with the corresponding translations for each language. If a file does not exist, it is created.
     Args:
         languages: The list of languages to generate the files for.
-        translationsDir: The directory where the translation files are stored.
+        translations_dir: The directory where the translation files are stored.
         templates: The list of templates to generate the files for.
-        templatesDir: The directory where the template files are stored.
-        rootDir: The root directory where the generated files will be stored.
+        templates_dir: The directory where the template files are stored.
+        output_dir: The output directory where the generated files will be stored.
 
     Returns:
         Nothing, the function updates the files in place.
     """
 
     for lang in languages:
-        translations = getTranslations(translationsDir, lang)
+        print(f"Generating files for language '{lang}'...")
+        translations = get_translations(translations_dir, lang)
         
         for template in templates:
+            print(f"- Generating file for template '{template}'...")
             if template.endswith('.html'):
                 template = template[:-5]
 
-            if not os.path.exists(f"{rootDir}{lang}/"):
-                os.makedirs(f"{rootDir}{lang}/")
+            if not os.path.exists(f"{output_dir}{lang}/"):
+                print(f"(Creating directory '{output_dir}{lang}/'...)")
+                os.makedirs(f"{output_dir}{lang}/")
 
-            output = replaceTemplateVariables(f"{templatesDir}{template}.html", getTemplateTranslations(translations, template))
-            with open(f"{rootDir}{lang}/{template}.html", 'w') as outputFile:
-                outputFile.write(output)
+            output = replace_variables(f"{templates_dir}{template}.html", get_template_translations(translations, template))
+            with open(f"{output_dir}{lang}/{template}.html", 'w') as output_file:
+                print(f"  - Writing file '{output_dir}{lang}/{template}.html'...")
+                output_file.write(output)
+
+    print("Static site generation completed.")
 
 def printHelp() -> None:
     """
@@ -159,64 +159,70 @@ def printHelp() -> None:
         Nothing, the function only prints the help message.
     """
     helpMessage="""Static Site Generator by froelen.\n
-    Usage: python3 ssg.py [options] [*--languages] [*--translations-dir] [*--templates] [*--templates-dir] [*--root-dir]\n
+    Usage: python3 ssg.py [options] [*--languages] [*--translations-dir] [*--templates] [*--templates-dir] [*--output-dir]\n
     Options:\n
       -h, --help          : Shows this help message.\n
       *--languages        : Comma-separated list of languages to generate (e.g. 'en,fr,es').\n
       *--translations-dir : Directory where the translation files are stored (default: './translations/').\n
       *--templates        : Comma-separated list of templates to generate (e.g. 'index,about,contact').\n
       *--templates-dir    : Directory where the template files are stored (default: './templates/').\n
-      *--root-dir         : Root directory where the generated files will be stored (default: './').\n
+      *--output-dir       : Output directory where the generated files will be stored (default: './output/').\n
     Options marked with '*' are required.\n
-    Example: python3 ssg.py -languages='en,fr,es' --translations-dir='./translations/' --templates='index,about' --templates-dir='./templates/' --root-dir='./output/'"""
+    Example: python3 ssg.py -languages='en,fr,es' --translations-dir='./translations/' --templates='index,about' --templates-dir='./templates/' --output-dir='./output/'"""
     print(helpMessage)
 
+
 # CLI
+args = sys.argv[1:] # get the command line arguments (excluding the script name)
+options = "h"       # short options (e.g. "h" for -h)
+long_options = ["help", "languages=", "translations-dir=", "templates=", "templates-dir=", "output-dir="]
+
 languages = []
-translationsDir = ''
+translations_dir = ''
 templates = []
-templatesDir = ''
-rootDir = ''
+templates_dir = ''
+output_dir = ''
 
-try:
-    arguments, values = getopt.getopt(args, options, long_options)
-    
-    if '-h' in [arg for arg, val in arguments] or '--help' in [arg for arg, val in arguments]:
-        printHelp()
-        sys.exit()
-
-    for requiredOption in ['--languages', '--translations-dir', '--templates', '--templates-dir', '--root-dir']:
-        if requiredOption not in [arg for arg, val in arguments]:
-            print(f"Error: missing required option '{requiredOption}'. Use -h or --help for more information.")
+if __name__ == "__main__":
+    try:
+        arguments, values = getopt.getopt(args, options, long_options)
+        
+        if '-h' in [arg for arg, val in arguments] or '--help' in [arg for arg, val in arguments]:
+            printHelp()
             sys.exit()
 
-    for currentArg, currentVal in arguments:
-        if currentArg == '--languages':
-            languages = currentVal.split(',')
-            languages.pop()
-            print(f"Languages to generate: {languages}")
+        for required in ['--languages', '--translations-dir', '--templates', '--templates-dir', '--output-dir']:
+            if required not in [arg for arg, val in arguments]:
+                print(f"Error: missing required option '{required}'. Use -h or --help for more information.")
+                sys.exit()
 
-        elif currentArg == '--translations-dir':
-            translationsDir = uniformizePath(currentVal, True)
-            print(f"Translations directory: {translationsDir}")
+        for current_arg, current_val in arguments:
+            if current_arg == '--languages':
+                languages = current_val.split(',')
+                languages.pop()
+                print(f"Languages to generate: {languages}")
 
-        elif currentArg == '--templates':
-            templates = currentVal.split(',')
-            print(f"Templates to generate: {templates}")
+            elif current_arg == '--translations-dir':
+                translations_dir = uniformize_path(current_val, True)
+                print(f"Translations directory: {translations_dir}")
 
-        elif currentArg == '--templates-dir':
-            templatesDir = uniformizePath(currentVal, True)
-            print(f"Templates directory: {templatesDir}")
+            elif current_arg == '--templates':
+                templates = current_val.split(',')
+                print(f"Templates to generate: {templates}")
 
-        elif currentArg == '--root-dir':
-            rootDir = uniformizePath(currentVal, True)
-            print(f"Root directory: {rootDir}")
+            elif current_arg == '--templates-dir':
+                templates_dir = uniformize_path(current_val, True)
+                print(f"Templates directory: {templates_dir}")
 
-        else:
-            print(f"Unknown option: {currentArg}")
-            sys.exit()
+            elif current_arg == '--output-dir':
+                output_dir = uniformize_path(current_val, True)
+                print(f"output directory: {output_dir}")
 
-    updateFiles(languages, translationsDir, templates, templatesDir, rootDir)
+            else:
+                print(f"Unknown option: {current_arg}")
+                sys.exit()
 
-except getopt.GetoptError as err:
-    print(str(err))
+        update_files(languages, translations_dir, templates, templates_dir, output_dir)
+
+    except getopt.GetoptError as err:
+        print(str(err)) 
