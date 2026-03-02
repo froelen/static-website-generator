@@ -34,5 +34,47 @@ The variables are set in the HTML file with a double pair of curly brackets. E.g
 </html>
 ```
 
+## Usage
+Run `python3 <path to script>/ssg.py [options] --languages= --translations-dir= --templates= --templates-dir= --output-dir=`
+
+Run `python3 <path to script>/ssg.py -h` or `python3 <path to script>/ssg.py --help` to display the help message.
+
+### Arguments
+- `-h`, `--help` : displays the help message.
+- (*)`--languages` : Comma-separated languages to generate the files for (e.g. 'en,fr').
+- (*)`--translations-dir` : Path to the directory containing the JSON files.
+- (*)`--templates` : Comma-separated names of the templates to geenrate the files for (e.g. 'index,about').
+- (*)`--templates-dir` : Path to the directory containing the HTML files.
+- (*)`--output-dir` : Path to the directory into which the folders and files will be created or updated.
+
+/!\ Arguments marked with (*) are mandatory.
+
+### Exemple
+Current directory is:
+```
+directory/
+- assets/
+  - ssg.py
+  - templates/
+    - index.html
+    - other-page.html
+  - translations/
+    - en.json
+    - fr.json
+```
+
+Running `python3 ./assets/ssg.py --languages='en,fr' --translations-dir='./assets/translations/' --templates='index,other-page' --templates-dir='./assets/templates/' --output-dir='./output'` will give you this:
+```
+directory/
+- assets/ (same as before)
+- output/
+  - en/
+    - index.html
+    - other-page.html
+  - fr/
+    - index.html
+    - other-page.html
+```
+
 ## Copyright and licensing
 This work has no copyright and is free of any license.
