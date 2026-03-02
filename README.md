@@ -15,7 +15,7 @@ The language files are of the JSON format, using the following structure:
 {
   "index":{
     "variableName":"Whatever content you want.",
-    "variable2":"It can include HTML tags <em>like so<em>."
+    "variable2":"It can include HTML tags <em>like so</em>."
   },
   "other-page":{
     "variableName":"Variables can have the same name if they're under different templates."
