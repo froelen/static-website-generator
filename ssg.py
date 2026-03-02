@@ -12,6 +12,29 @@ import os           # for file management
 
 
 # FUNCTIONS
+def printHelp() -> None:
+    """
+    Prints the help message for the CLI.
+
+    Args:
+        Nothing.
+
+    Returns:
+        Nothing, the function only prints the help message.
+    """
+    helpMessage="""Static Site Generator by froelen.\n
+    Usage: python3 ssg.py [options] [*--languages] [*--translations-dir] [*--templates] [*--templates-dir] [*--output-dir]\n
+    Options:\n
+      -h, --help          : Shows this help message.\n
+      *--languages        : Comma-separated list of languages to generate (e.g. 'en,fr,es').\n
+      *--translations-dir : Directory where the translation files are stored (default: './translations/').\n
+      *--templates        : Comma-separated list of templates to generate (e.g. 'index,about,contact').\n
+      *--templates-dir    : Directory where the template files are stored (default: './templates/').\n
+      *--output-dir       : Output directory where the generated files will be stored (default: './output/').\n
+    Options marked with '*' are required.\n
+    Example: python3 ssg.py -languages='en,fr,es' --translations-dir='./translations/' --templates='index,about' --templates-dir='./templates/' --output-dir='./output/'"""
+    print(helpMessage)
+
 def uniformize_path(path:str, trailing_slash:bool=False) -> str:
     """
     Uniformizes a path by replacing backslashes with forward slashes, removing redundant slashes, and adding a trailing slash if necessary.
@@ -35,84 +58,6 @@ def uniformize_path(path:str, trailing_slash:bool=False) -> str:
         path += '/'
 
     return path
-
-def get_translations(translations_dir:str='./', lang:str='') -> dict[str, dict[str, str]]:
-    """
-    Returns a dictionnary of the translations of the given language.
-
-    Args:
-        translations_dir: The directory where the translation files are stored.
-        lang: The language to get the translations for.
-
-    Returns:
-        translations: A dictionnary of the translations for the given language (keys: template names as strings ; values: dictionnaries of the translations for each template).
-    """
-    translations_dir = uniformize_path(translations_dir, True)
-
-    try:
-        with open(f"{translations_dir}{lang}.json", 'r') as file:
-                translations = json.load(file)
-
-    except FileNotFoundError:
-        print(f"Error: the translation file for language '{lang}' does not exist.")
-        raise SystemExit
-
-    return translations
-
-def get_template_translations(translations:dict[str, dict[str, str]], template_name:str='') -> dict[str, str]:
-    """
-    Returns a dictionnary of the translations for the given template.
-
-    Args:
-        translations: The dictionnary of all the translations for a language (keys: template names as strings ; values: dictionnaries of the translations).
-        template_name: The name of the template to get the translations for (file extension is optional).
-        
-    Returns:
-        translations[template_name]:A dictionnary of the translations for the given template (keys: the variables ; values: the translations).
-    """
-    
-    if template_name.endswith('.html'):
-        template_name = template_name[:-5]
-
-    if template_name not in translations:
-        return {}
-    
-    return translations[template_name]
-
-def replace_variables(full_path:str, template_translations:dict[str, str]={}, missing_translation_warn:bool=False) -> str:
-    """
-    Returns an HTML string with the template's variables replaced by the corresponding translations.
-
-    Args:
-        full_path: Full path (absolute or relative) to the template file (e.g. 'C:/Users/User/Desktop/index.html' or './templates/index.html'). MUST INCLUDE THE FILE EXTENSION.
-        template_translations: Dictionnary of the translations (keys: variables as strings ; values: strings of the translations)
-        missing_translation_warn: Whether to include information about missing translations in the output or not.
-
-    Returns:
-        template_content: The content of the template with the variables replaced by the corresponding translations.
-    """
-    full_path = uniformize_path(full_path)
-
-    with open(full_path, 'r') as template:
-        template_content = template.read()
-
-        # {{...}} is the variable marker
-        while '{{' in template_content and '}}' in template_content:
-            start_index = template_content.index('{{')
-            end_index = template_content.index('}}', start_index) + 2
-            variable = template_content[start_index:end_index]
-            variable_name = variable[2:-2].strip()
-
-            if variable_name in template_translations:
-                translation = template_translations[variable_name]
-                template_content = template_content.replace(variable, translation)
-            else:
-                if missing_translation_warn:
-                    template_content = template_content.replace(variable, f"MISSING TRANSLATION: {variable_name}")
-                else:
-                    template_content = template_content.replace(variable, '')
-
-    return template_content
 
 def update_files(languages:list[str], translations_dir:str, templates:list[str], templates_dir:str, output_dir:str) -> None:
     """
@@ -148,29 +93,81 @@ def update_files(languages:list[str], translations_dir:str, templates:list[str],
 
     print("Static site generation completed.")
 
-def printHelp() -> None:
+def get_translations(translations_dir:str='./', lang:str='') -> dict[str, dict[str, str]]:
     """
-    Prints the help message for the CLI.
+    Returns a dictionnary of the translations of the given language.
 
     Args:
-        Nothing.
+        translations_dir: The directory where the translation files are stored.
+        lang: The language to get the translations for.
 
     Returns:
-        Nothing, the function only prints the help message.
+        translations: A dictionnary of the translations for the given language (keys: template names as strings ; values: dictionnaries of the translations for each template).
     """
-    helpMessage="""Static Site Generator by froelen.\n
-    Usage: python3 ssg.py [options] [*--languages] [*--translations-dir] [*--templates] [*--templates-dir] [*--output-dir]\n
-    Options:\n
-      -h, --help          : Shows this help message.\n
-      *--languages        : Comma-separated list of languages to generate (e.g. 'en,fr,es').\n
-      *--translations-dir : Directory where the translation files are stored (default: './translations/').\n
-      *--templates        : Comma-separated list of templates to generate (e.g. 'index,about,contact').\n
-      *--templates-dir    : Directory where the template files are stored (default: './templates/').\n
-      *--output-dir       : Output directory where the generated files will be stored (default: './output/').\n
-    Options marked with '*' are required.\n
-    Example: python3 ssg.py -languages='en,fr,es' --translations-dir='./translations/' --templates='index,about' --templates-dir='./templates/' --output-dir='./output/'"""
-    print(helpMessage)
 
+    try:
+        with open(f"{translations_dir}{lang}.json", 'r') as file:
+                translations = json.load(file)
+
+    except FileNotFoundError:
+        print(f"Error: the translation file for language '{lang}' does not exist.")
+        raise SystemExit
+
+    return translations
+
+def replace_variables(full_path:str, template_translations:dict[str, str]={}, missing_translation_warn:bool=False) -> str:
+    """
+    Returns an HTML string with the template's variables replaced by the corresponding translations.
+
+    Args:
+        full_path: Full path (absolute or relative) to the template file (e.g. 'C:/Users/User/Desktop/index.html' or './templates/index.html'). MUST INCLUDE THE FILE EXTENSION.
+        template_translations: Dictionnary of the translations (keys: variables as strings ; values: strings of the translations)
+        missing_translation_warn: Whether to include information about missing translations in the output or not.
+
+    Returns:
+        template_content: The content of the template with the variables replaced by the corresponding translations.
+    """
+
+    with open(full_path, 'r') as template:
+        template_content = template.read()
+
+        # {{...}} is the variable marker
+        while '{{' in template_content and '}}' in template_content:
+            start_index = template_content.index('{{')
+            end_index = template_content.index('}}', start_index) + 2
+            variable = template_content[start_index:end_index]
+            variable_name = variable[2:-2].strip()
+
+            if variable_name in template_translations:
+                translation = template_translations[variable_name]
+                template_content = template_content.replace(variable, translation)
+            else:
+                if missing_translation_warn:
+                    template_content = template_content.replace(variable, f"MISSING TRANSLATION: {variable_name}")
+                else:
+                    template_content = template_content.replace(variable, '')
+
+    return template_content
+
+def get_template_translations(translations:dict[str, dict[str, str]], template_name:str='') -> dict[str, str]:
+    """
+    Returns a dictionnary of the translations for the given template.
+
+    Args:
+        translations: The dictionnary of all the translations for a language (keys: template names as strings ; values: dictionnaries of the translations).
+        template_name: The name of the template to get the translations for (file extension is optional).
+        
+    Returns:
+        translations[template_name]:A dictionnary of the translations for the given template (keys: the variables ; values: the translations).
+    """
+    
+    if template_name.endswith('.html'):
+        template_name = template_name[:-5]
+
+    if template_name not in translations:
+        return {}
+    
+    return translations[template_name]
 
 # CLI
 args = sys.argv[1:] # get the command line arguments (excluding the script name)
