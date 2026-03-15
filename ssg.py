@@ -196,7 +196,6 @@ if __name__ == "__main__":
         for current_arg, current_val in arguments:
             if current_arg == '--languages':
                 languages = current_val.split(',')
-                languages.pop()
                 print(f"Languages to generate: {languages}")
 
             elif current_arg == '--translations-dir':
