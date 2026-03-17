@@ -1,5 +1,17 @@
 # froelen's Static Website Generator
 
+> This README isn't completely finished! Some sections are missing, incomplete, or are going to be rewritten. It should still be usable in this state, but be aware.
+
+### To-do
+
+- [ ] Add more precise copyright/licensing information
+- [ ] Tell about common errors and how to fix them
+- [ ] Requirements section (currently: Python 3 standard library)
+- [ ] Tell explicitely that JSON top values must match template's name
+- [ ] Tell about untranslated variables (currently: no replacement)
+
+---
+
 ## What is an SSG?
 An SSG is a tool that can **automatically** generate webpages based on templates and various options.
 
@@ -43,7 +55,7 @@ Run `python3 <path to script>/ssg.py -h` or `python3 <path to script>/ssg.py --h
 - `-h`, `--help` : displays the help message.
 - (*)`--languages` : Comma-separated languages to generate the files for (e.g. 'en,fr').
 - (*)`--translations-dir` : Path to the directory containing the JSON files.
-- (*)`--templates` : Comma-separated names of the templates to geenrate the files for (e.g. 'index,about').
+- (*)`--templates` : Comma-separated names of the templates to generate the files for (e.g. 'index,about').
 - (*)`--templates-dir` : Path to the directory containing the HTML files.
 - (*)`--output-dir` : Path to the directory into which the folders and files will be created or updated.
 
