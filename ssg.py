@@ -7,7 +7,7 @@
 
 # IMPORTS
 import getopt, sys  # for CLI
-import json         # fpor reading translation files
+import json         # for reading translation files
 import os           # for file management
 
 
@@ -17,10 +17,10 @@ def printHelp() -> None:
     Prints the help message for the CLI.
 
     Args:
-        Nothing.
+        Nothing: the function doesn't take any argument.
 
     Returns:
-        Nothing, the function only prints the help message.
+        Nothing: the function only prints the help message.
     """
     helpMessage="""Static Site Generator by froelen.\n
     Usage: python3 ssg.py [options] [*--languages] [*--translations-dir] [*--templates] [*--templates-dir] [*--output-dir]\n
@@ -70,7 +70,7 @@ def update_files(languages:list[str], translations_dir:str, templates:list[str],
         output_dir: The output directory where the generated files will be stored.
 
     Returns:
-        Nothing, the function updates the files in place.
+        Nothing: the function updates the files in place.
     """
 
     for lang in languages:
