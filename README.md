@@ -4,11 +4,23 @@
 
 ### To-do
 
+#### README
+
 - [ ] Add more precise copyright/licensing information
 - [ ] Tell about common errors and how to fix them
 - [ ] Requirements section (currently: Python 3 standard library)
 - [ ] Tell explicitely that JSON top values must match template's name
-- [ ] Tell about untranslated variables (currently: no replacement)
+- [ ] Tell about untranslated variables (currently: replaced by empty string)
+- [ ] Add doc section for missing translations warning
+
+#### Program
+
+- [ ] Update missing translations warning mechanism
+- [ ] Handle better incorrectly formatted parameters ('{{ {{ }}' or '{{' without '}}')
+- [ ] Verify paths existence beforehand
+- [ ] Move error catching from `get_translations()` to `__main__`
+- [ ] Replace `getopt` with `argparse`
+- [ ] Fix inconsistent casing in `print()` for `output_dir`
 
 ---
 
