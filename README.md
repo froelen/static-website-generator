@@ -101,4 +101,5 @@ directory/
 ```
 
 ## Copyright and licensing
-This work has no copyright and is free of any license.
+This version and up (>= v0.1.2) under MIT, previous versions (< v0.1.2) under public domain.
+More details on versions and licenses coming soon, if unsure, contact [froelen@tuta.io](mailto:froelen@tuta.io)
