@@ -1,7 +1,7 @@
 ##############################
 #  Static Website Generator  #
 #  by froelen                #
-#  No copyright or license   #
+#  License in README         #
 ##############################
 
 
